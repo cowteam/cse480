@@ -1,12 +1,15 @@
 #include <QTRSensors.h>
 #include <Servo.h> 
 
+//constant pin values
 const int LEFT_MOTOR_PIN=10;
 const int RIGHT_MOTOR_PIN=11;
 const int LED_PIN=13;
-const int BUTTON_PIN=1;
+const int BUTTON_PIN=12;
 
 //servo stop values are 89 (determined by experimentation)
+const int STOP_VALUE=89;
+
 Servo leftMotor;
 Servo rightMotor;
 
@@ -26,8 +29,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT);
   
-  //Sensor calibration routine, currently interaction based 
-  //button press to initiate
+  //Sensor calibration routine
   calibrateRoutine();
 }
 
@@ -36,37 +38,87 @@ void loop() {
 
   unsigned int sensors[8];
   int position = qtr.readLine(sensors);
-
-// Utilized for sensor debug
+  int leftSpeed = 91;
+  int rightSpeed = 87;
+  
+  //Utilized for sensor debug
 //  for (int i = 0; i < 8; i++)
 //  {
 //    Serial.println(sensors[i]);  
 //  }
 //
 //  Serial.println("-----------");
-
 //  Serial.println(position);
-  
-  int error = position - 3500;
+//  Serial.println("-----------");
 
-  int leftSpeed = 91;
-  int rightSpeed = 87;
-  int offset = map(abs(error),500, 1500, 1,5);
+
+  //if we sense an intersection
+  if (sensors[0] > 200 && sensors[1] > 200 && sensors[2] > 200 && sensors[5] > 200 && sensors[6] > 200 && sensors[7] > 200){
+    //intersection to the left/right?
+    stopMovement();
+    forward(leftSpeed, rightSpeed);
+    delay(500);
+    stopMovement();
+    
+    qtr.readLine(sensors);
   
-  forward(leftSpeed, rightSpeed);
+    if (sensors[0] < 400 && sensors[1] < 400 && sensors[6] < 400 && sensors[7] < 400){
+      turnRight();
+    }
+    else if (sensors[0] > 200 && sensors[1] > 200 && sensors[2] > 200 && sensors[3] > 200 && sensors[4] > 200 && sensors[5] > 200 && sensors[6] > 200 && sensors[7] > 200){
+      stopMovement();
+      turnRight();
+      turnRight();
+      turnRight();
+      turnRight();
+      stopMovement();
+      delay(5000);
+    }
+  }
+  else if(sensors[0] > 150 && sensors[1] > 150 && sensors[2] > 150  && sensors[3] > 150){
+    //intersection to the left/right?
+    stopMovement();
+    forward(leftSpeed, rightSpeed);
+    delay(500);
+    
+    qtr.readLine(sensors);
+    
+      
+    if (sensors[0] < 400 && sensors[1] < 400 && sensors[6] < 400 && sensors[7] < 400){
+      turnRight();
+    }
+  }
+  else if (sensors[4] > 100 && sensors[5] > 100 && sensors[6] > 100 && sensors[7] > 100){
+    stopMovement();
+    forward(leftSpeed, rightSpeed);
+    delay(700);
+    stopMovement();
+    
+    qtr.readLine(sensors);
+    
+    if (sensors[0] < 100 && sensors[1] < 100 && sensors[2] < 100 && sensors[3] < 100 && sensors[4] < 100 && sensors[5] < 100 && sensors[6] < 100 && sensors[7] < 100){
+    turnLeft();
+    }
+  }
+  else if (sensors[0] < 50 && sensors[1] < 50 && sensors[2] < 50 && sensors[3] < 50 && sensors[4] < 50 && sensors[5] < 50 && sensors[6] < 50 && sensors[7] < 50){
+    turnAround();
+  }
   
-  if (error < -500){ // the line is on the right
+  
+  int error = position - 2620;
+  int offset = map(abs(error),100, 1500, 1,7);
+  
+  if (error < -100){ // the line is on the right
     leftSpeed = leftSpeed + offset;
     forward(leftSpeed, rightSpeed);
   }
-  else if (error > 500){ // the line is on the left
+  else if (error > 100){ // the line is on the left
     rightSpeed = rightSpeed - offset;
     forward(leftSpeed, rightSpeed);
   }
   else{
   forward(leftSpeed, rightSpeed);
   }
-
 
 }
 
@@ -79,10 +131,15 @@ void forward(int leftSpeed,int rightSpeed) {
   rightMotor.write(rightSpeed);
 }
 
+void stopMovement(){
+  leftMotor.write(STOP_VALUE);
+  rightMotor.write(STOP_VALUE);
+}
+
 void turnRight() {
   leftMotor.write(93);
   rightMotor.write(93);
-  delay(850);
+  delay(500);
   leftMotor.write(89);
   rightMotor.write(89);
 }
@@ -90,22 +147,21 @@ void turnRight() {
 void turnLeft() {
   leftMotor.write(85);
   rightMotor.write(85);
-  delay(800);
+  delay(700);
   leftMotor.write(89);
   rightMotor.write(89);
-  delay(5000); 
+}
+
+void turnAround() {
+  leftMotor.write(85);
+  rightMotor.write(85);
+  delay(1050);
+  leftMotor.write(89);
+  rightMotor.write(89);
 }
 
 void calibrateRoutine(){
   boolean buttonPressWait = true;
-  
-//  while(buttonPressWait)
-//  {
-//    if (digitalRead(BUTTON_PIN == HIGH))
-//    {
-//      buttonPressWait = false;
-//    }
-//  }
   
   digitalWrite(LED_PIN, HIGH);
   
@@ -116,7 +172,6 @@ void calibrateRoutine(){
   }
   
   turnRight();
-  turnRight();
   
   for (int i = 0; i < 6; i++)
   {
@@ -126,11 +181,4 @@ void calibrateRoutine(){
   
   digitalWrite(LED_PIN, LOW);
   
-//  while(buttonPressWait==false);
-//  {
-//    if (digitalRead(BUTTON_PIN == HIGH))
-//    {
-//      buttonPressWait = true;
-//    }
-//  } 
 }
