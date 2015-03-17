@@ -50,10 +50,11 @@ void loop() {
 //  Serial.println("-----------");
 //  Serial.println(position);
 //  Serial.println("-----------");
+//  delay(1000);
 
 
   //if we sense an intersection
-  if (sensors[0] > 200 && sensors[1] > 200 && sensors[2] > 200 && sensors[5] > 200 && sensors[6] > 200 && sensors[7] > 200){
+  if (sensors[0] > 100 && sensors[1] > 100 && sensors[2] > 100 && sensors[5] > 100 && sensors[6] > 100 && sensors[7] > 100){
     //intersection to the left/right?
     stopMovement();
     forward(leftSpeed, rightSpeed);
@@ -62,41 +63,40 @@ void loop() {
     
     qtr.readLine(sensors);
   
-    if (sensors[0] < 400 && sensors[1] < 400 && sensors[6] < 400 && sensors[7] < 400){
-      turnRight();
-    }
-    else if (sensors[0] > 200 && sensors[1] > 200 && sensors[2] > 200 && sensors[3] > 200 && sensors[4] > 200 && sensors[5] > 200 && sensors[6] > 200 && sensors[7] > 200){
+    if (sensors[0] > 200 && sensors[1] > 200 && sensors[2] > 200 && sensors[3] > 200 && sensors[4] > 200 && sensors[5] > 200 && sensors[6] > 200 && sensors[7] > 200){
       stopMovement();
-      turnRight();
-      turnRight();
-      turnRight();
-      turnRight();
-      stopMovement();
+      celebrate();
       delay(5000);
     }
+    else{
+      turnRight();
+    }
   }
-  else if(sensors[0] > 150 && sensors[1] > 150 && sensors[2] > 150  && sensors[3] > 150){
-    //intersection to the left/right?
+  else if(sensors[0] > 200 && sensors[1] > 200 && sensors[2] > 200 && sensors[3] > 200){
     stopMovement();
     forward(leftSpeed, rightSpeed);
     delay(500);
     
     qtr.readLine(sensors);
-    
-      
-    if (sensors[0] < 400 && sensors[1] < 400 && sensors[6] < 400 && sensors[7] < 400){
-      turnRight();
-    }
+
+   if (sensors[0] > 100 && sensors[1] > 100 && sensors[2] > 100 && sensors[3] > 100 && sensors[4] > 100 && sensors[5] > 100 && sensors[6] > 100 && sensors[7] > 100){
+      stopMovement();
+      celebrate();
+      delay(5000);
+    } 
+    else{
+    turnRight();
+    }  
   }
-  else if (sensors[4] > 100 && sensors[5] > 100 && sensors[6] > 100 && sensors[7] > 100){
+  else if (sensors[5] > 200 && sensors[6] > 200 && sensors[7] > 200){
     stopMovement();
     forward(leftSpeed, rightSpeed);
-    delay(700);
+    delay(500);
     stopMovement();
     
     qtr.readLine(sensors);
     
-    if (sensors[0] < 100 && sensors[1] < 100 && sensors[2] < 100 && sensors[3] < 100 && sensors[4] < 100 && sensors[5] < 100 && sensors[6] < 100 && sensors[7] < 100){
+    if (sensors[0] < 50 && sensors[1] < 50 && sensors[2] < 50 && sensors[3] < 50 && sensors[4] < 50 && sensors[5] < 50 && sensors[6] < 50 && sensors[7] < 50){
     turnLeft();
     }
   }
@@ -104,8 +104,13 @@ void loop() {
     turnAround();
   }
   
+  //position correction
+  if((sensors[0] > 100 && sensors[1] > 100 && sensors[2] > 100 && sensors[3] > 100) || (sensors[4] > 100 && sensors[5] > 100 && sensors[6] > 100 && sensors[7] > 100)){
+    position = 2750;  
+  }
   
-  int error = position - 2620;
+  
+  int error = position - 2750;
   int offset = map(abs(error),100, 1500, 1,7);
   
   if (error < -100){ // the line is on the right
@@ -123,7 +128,7 @@ void loop() {
 }
 
 void forward(int leftSpeed,int rightSpeed) {
-  //default forward values should be:
+  //default forward values (fast) should be:
   //leftSpeed = 97
   //rightSpeed = 82
   
@@ -137,17 +142,17 @@ void stopMovement(){
 }
 
 void turnRight() {
-  leftMotor.write(93);
-  rightMotor.write(93);
-  delay(500);
+  leftMotor.write(95);
+  rightMotor.write(89);
+  delay(650);
   leftMotor.write(89);
   rightMotor.write(89);
 }
 
 void turnLeft() {
-  leftMotor.write(85);
-  rightMotor.write(85);
-  delay(700);
+  leftMotor.write(86);
+  rightMotor.write(83);
+  delay(800);
   leftMotor.write(89);
   rightMotor.write(89);
 }
@@ -181,4 +186,21 @@ void calibrateRoutine(){
   
   digitalWrite(LED_PIN, LOW);
   
+}
+
+void celebrate(){
+  leftMotor.write(97);
+  rightMotor.write(97);  
+  delay(1000);
+  leftMotor.write(82);
+  rightMotor.write(82);
+  delay(1000);  
+  leftMotor.write(97);
+  rightMotor.write(82);
+  delay(1000);
+  leftMotor.write(82);
+  rightMotor.write(97);
+  delay(1000);
+  leftMotor.write(89);
+  rightMotor.write(89);
 }
