@@ -17,20 +17,39 @@ QTRSensorsRC qtr((unsigned char[]) {2,3,4,5,6,7,8,9}, 8);
 
 // the setup function runs once when you press reset or power the board
 void setup() {  
+  bool lineNotFound = true;
+  unsigned int sensors[8];
+  int position;
   
   //Initializes the serial port for debug communication
   Serial.begin(9600);
-  
-  //Attaches the motors to their respective pins on the Arduino
-  leftMotor.attach(LEFT_MOTOR_PIN);
-  rightMotor.attach(RIGHT_MOTOR_PIN);
   
   //Enable debug LED and button
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT);
   
+  //Attaches the motors to their respective pins on the Arduino
+  leftMotor.attach(LEFT_MOTOR_PIN);
+  rightMotor.attach(RIGHT_MOTOR_PIN);
+  
   //Sensor calibration routine
   calibrateRoutine();
+  
+  leftMotor.detach();
+  rightMotor.detach();
+  
+  while(lineNotFound){
+    position = qtr.readLine(sensors);
+    
+    if (abs(position - 2750)<400){
+      lineNotFound = false;
+    }
+  }
+  
+  //Attaches the motors to their respective pins on the Arduino
+  leftMotor.attach(LEFT_MOTOR_PIN);
+  rightMotor.attach(RIGHT_MOTOR_PIN);
+  
 }
 
 // the loop function runs over and over again forever
@@ -66,7 +85,6 @@ void loop() {
     if (sensors[0] > 200 && sensors[1] > 200 && sensors[2] > 200 && sensors[3] > 200 && sensors[4] > 200 && sensors[5] > 200 && sensors[6] > 200 && sensors[7] > 200){
       stopMovement();
       celebrate();
-      delay(5000);
     }
     else{
       turnRight();
@@ -82,7 +100,6 @@ void loop() {
    if (sensors[0] > 100 && sensors[1] > 100 && sensors[2] > 100 && sensors[3] > 100 && sensors[4] > 100 && sensors[5] > 100 && sensors[6] > 100 && sensors[7] > 100){
       stopMovement();
       celebrate();
-      delay(5000);
     } 
     else{
     turnRight();
@@ -189,6 +206,10 @@ void calibrateRoutine(){
 }
 
 void celebrate(){
+  bool lineNotFound = true;
+  unsigned int sensors[8];
+  int position;
+  
   leftMotor.write(97);
   rightMotor.write(97);  
   delay(1000);
@@ -203,4 +224,20 @@ void celebrate(){
   delay(1000);
   leftMotor.write(89);
   rightMotor.write(89);
+  
+  leftMotor.detach();
+  rightMotor.detach();
+  
+  while(lineNotFound){
+    position = qtr.readLine(sensors);
+    
+    if (abs(position - 2750)<400){
+      lineNotFound = false;
+    }
+  }
+  
+  //Attaches the motors to their respective pins on the Arduino
+  leftMotor.attach(LEFT_MOTOR_PIN);
+  rightMotor.attach(RIGHT_MOTOR_PIN);
+  
 }
